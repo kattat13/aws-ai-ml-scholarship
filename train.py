@@ -55,42 +55,41 @@ def save_model(save_dir='checkpoint'):
     print(f'Model saved to {save_path}')
 
 
-def transformations():
-    # transforms for the training, validation, and testing sets
-    train_transforms = transforms.Compose([
-        transforms.RandomRotation(30),
-        transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ])
-
-    test_transforms = transforms.Compose([
-        transforms.Resize(255),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ])
-
-    val_transforms = transforms.Compose([
-        transforms.Resize(255),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ])
-
-    # load the datasets with ImageFolder
+def train_transformer(train_dir):
+    train_transforms = transforms.Compose([transforms.RandomRotation(30),
+                                       transforms.RandomResizedCrop(224),
+                                       transforms.RandomHorizontalFlip(),
+                                       transforms.ToTensor(),
+                                       transforms.Normalize([0.485, 0.456, 0.406],
+                                                            [0.229, 0.224, 0.225])])
     train_data = datasets.ImageFolder(train_dir, transform=train_transforms)
+    return train_data
+
+
+def test_transformer(test_dir):
+    test_transforms = transforms.Compose([transforms.Resize(256),
+                                      transforms.CenterCrop(224),
+                                      transforms.ToTensor(),
+                                      transforms.Normalize([0.485, 0.456, 0.406],
+                                                           [0.229, 0.224, 0.225])])
     test_data = datasets.ImageFolder(test_dir, transform=test_transforms)
+    return test_data
+
+
+def val_transformer(val_dir):
+    val_transforms = transforms.Compose([transforms.Resize(256),
+                                      transforms.CenterCrop(224),
+                                      transforms.ToTensor(),
+                                      transforms.Normalize([0.485, 0.456, 0.406],
+                                                           [0.229, 0.224, 0.225])])
+    # Load the Data
     val_data = datasets.ImageFolder(valid_dir, transform=val_transforms)
+    return val_data
 
-    # Using the image datasets and the trainforms, define the dataloaders
-    trainloader = torch.utils.data.DataLoader(train_data, batch_size=64, shuffle=True)
-    testloader = torch.utils.data.DataLoader(test_data, batch_size=64)
-    valloader = torch.utils.data.DataLoader(val_data, batch_size=64)
 
-    return trainloader, testloader, valloader
-    
+def data_loader(data, batch_size=64, shuffle=False):
+    loader = torch.utils.data.DataLoader(data, batch_size=batch_size, shuffle=shuffle)
+    return loader
 
 
 parser = argparse.ArgumentParser(description='Train and save an image classification model.')
@@ -105,13 +104,20 @@ valid_dir = data_dir + '/valid'
 test_dir = data_dir + '/test'
 
 if torch.cuda.is_available():
-    print('-'*10, '\nCUDA used:', torch.cuda.memory_allocated(), '-'*10)
+    print('-'*10, '\nCUDA used:', torch.cuda.memory_allocated(), '\n', '-'*10)
     device = torch.device('cuda')
 
 if data_dir:
     if args.save_dir:
         if os.path.isdir(args.save_dir):
-            trainloader, testloader, valloader = transformations()
+            train_data = test_transformer(train_dir)
+            test_data = train_transformer(test_dir)
+            val_data = train_transformer(valid_dir)
+            
+            trainloader = data_loader(train_data, shuffle=True)
+            testloader = data_loader(test_data)
+            valloader = data_loader(val_data)
+            
             with open('cat_to_name.json', 'r') as f:
                 cat_to_name = json.load(f)
     
