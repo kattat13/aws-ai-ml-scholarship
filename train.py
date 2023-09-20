@@ -110,10 +110,13 @@ if torch.cuda.is_available():
 if data_dir:
     if args.save_dir:
         if os.path.isdir(args.save_dir):
+            # transform data for training, testing and validation sets
+            # and then load the datasets with ImageFolder
             train_data = test_transformer(train_dir)
             test_data = train_transformer(test_dir)
             val_data = train_transformer(valid_dir)
             
+            # define the dataloaders
             trainloader = data_loader(train_data, shuffle=True)
             testloader = data_loader(test_data)
             valloader = data_loader(val_data)
