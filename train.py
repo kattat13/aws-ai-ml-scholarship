@@ -106,7 +106,6 @@ def create_model(architecture):
     return model
 
 
-
 def check_save_dir(save_dir):
     if os.path.isdir(save_dir):
         return True
@@ -124,7 +123,11 @@ def check_arch(architecture):
 parser = argparse.ArgumentParser(description='Train and save an image classification model.')
 parser.add_argument('data_dir', help='The directory of images you want the model to be trained on', type=str)
 parser.add_argument('--save_dir', help='Directory to save checkpoints', type=str, default='save_directory')
-parser.add_argument('--architecture', help='Architecture of the network', default='vgg16', type=str)
+parser.add_argument('--arch', help='Architecture of the network', default='vgg16', type=str)
+parser.add_argument('--learning_rate', help='Learning rate, default 0.003', default=0.003, type=float)
+parser.add_argument('--hidden_units', help='Hidden units', default=512, type=int)
+parser.add_argument('--epochs', help='Number of epochs', default=2, type=int)
+
 
 args = parser.parse_args()
 
@@ -145,7 +148,7 @@ else:
     device = torch.device('cpu')
 
 if data_dir:
-    if check_save_dir(args.save_dir) and check_arch(args.architecture):
+    if check_save_dir(args.save_dir) and check_arch(args.arch):
         # transform data for training, testing and validation sets
         # and then load the datasets with ImageFolder
         train_data = test_transformer(train_dir)
@@ -160,7 +163,7 @@ if data_dir:
         with open('cat_to_name.json', 'r') as f:
             cat_to_name = json.load(f)
         
-        model = create_model(args.architecture)
+        model = create_model(args.arch)
 #             model = models.vgg16(pretrained=True)
         model.to(device)
 
@@ -181,12 +184,13 @@ if data_dir:
         model.classifier = classifier.to(device)
 
         criterion = nn.NLLLoss()
-        optimizer = optim.Adam(model.classifier.parameters(), lr=0.003)
+        optimizer = optim.Adam(model.classifier.parameters(), lr=args.learning_rate)
 
         # training
-        epochs = 2
+        epochs = args.epochs
+        print('\t----------\nTraining starts...\n\t----------')
         for epoch in range(epochs):
-            print('EPOCH', epoch)
+            print('EPOCH', epoch + 1)
 
             # notify the model we are in training mode
             model.train()
