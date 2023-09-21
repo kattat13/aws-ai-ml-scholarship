@@ -42,7 +42,7 @@ def load_checkpoint(filepath):
     return model
 
 
-def save_model(save_dir='checkpoint'):
+def save_model(save_dir):
     checkpoint = {
         'input_size': [3, 224, 224],
         'output_size': 102,
@@ -92,36 +92,39 @@ def data_loader(data, batch_size=64, shuffle=False):
     return loader
 
 
-def create_model(architecture='vgg16'):
-    exec("model = models.{}(pretrained=True)".format(architecture))
-    print(f'Using {architecture} pretrained network...')
+def create_model(architecture):
+    print(f'\t----------\nUsing {architecture} pretrained network...\n\t----------')  
+    if architecture == 'densenet161':
+        model = models.densenet161(pretrained=True)
+    if architecture == 'vgg16':
+        model = models.vgg16(pretrained=True)   
     
     # freeze parameters
-#     for param in model.parameters():
-#         param.requires_grad = False
+    for param in model.parameters():
+        param.requires_grad = False
         
     return model
 
 
 
 def check_save_dir(save_dir):
-    print(save_dir)
-    if save_dir == None:
-        save_dir = 'save_directory'
-        return save_dir
-    else:  # provided
-        if os.path.isdir(save_dir):  # provided and exists
-            return save_dir
-        else:
-            print("\tSpecified directory for saving the model doesn't exist. Application will end.")
+    if os.path.isdir(save_dir):
+        return True
+    else:
+        print("\tSpecified directory for saving the model doesn't exist. Application will end.")
 
 
+def check_arch(architecture):
+    if architecture == 'densenet161' or architecture == 'vgg16':
+        return True
+    else:
+        print(f'Unknown architecture (provided: {architecture}). Please pick from: densenet161 or vgg16.')
 
 
 parser = argparse.ArgumentParser(description='Train and save an image classification model.')
 parser.add_argument('data_dir', help='The directory of images you want the model to be trained on', type=str)
 parser.add_argument('--save_dir', help='Directory to save checkpoints', type=str, default='save_directory')
-parser.add_argument('--architecture', help='Architecture of the network', default='densenet161')
+parser.add_argument('--architecture', help='Architecture of the network', default='vgg16', type=str)
 
 args = parser.parse_args()
 
@@ -142,7 +145,7 @@ else:
     device = torch.device('cpu')
 
 if data_dir:
-    if check_save_dir(args.save_dir):
+    if check_save_dir(args.save_dir) and check_arch(args.architecture):
         # transform data for training, testing and validation sets
         # and then load the datasets with ImageFolder
         train_data = test_transformer(train_dir)
