@@ -96,7 +96,7 @@ def data_loader(data, batch_size=64, shuffle=False):
 
 
 def create_model(architecture):
-    print(f'\t----------\nUsing {architecture} pretrained network...')  
+    print(f'\t----------\nUsing {architecture} pretrained network...\n\t----------')  
     if architecture == 'densenet161':
         model = models.densenet161(pretrained=True)
         in_feats = 2208
@@ -132,7 +132,7 @@ parser.add_argument('--arch', help='Architecture of the network', default='vgg16
 parser.add_argument('--learning_rate', help='Learning rate, default 0.003', default=0.003, type=float)
 parser.add_argument('--hidden_units', help='Hidden units', default=512, type=int)
 parser.add_argument('--epochs', help='Number of epochs', default=2, type=int)
-
+parser.add_argument('--gpu', help='Enable GPU for training', action='store_true', default=False)
 
 args = parser.parse_args()
 
@@ -141,15 +141,15 @@ train_dir = data_dir + '/train'
 valid_dir = data_dir + '/valid'
 test_dir  = data_dir + '/test'
 
-
-
-
-
-if torch.cuda.is_available():
-    print('-'*10, '\nCUDA used:', torch.cuda.memory_allocated(), '\n', '-'*10)
-    device = torch.device('cuda')
+if args.gpu:
+    if torch.cuda.is_available():
+        print('\t----------\nUsing CUDA for training:', torch.cuda.memory_allocated())
+        device = torch.device('cuda')
+    else:
+        print("\t----------\nCUDA was not found on device, using CPU instead.")
+        device = torch.device('cpu')
 else:
-    print("CUDA was not found on device, using CPU instead.")
+    print("\t----------\nUsing CPU for training.")
     device = torch.device('cpu')
 
 if data_dir:
@@ -242,8 +242,3 @@ if data_dir:
             print(f'Validation Loss: {val_loss:.3f}')
             print(f'Validation Accuracy: {val_accuracy:.3f}')
         save_model(args.save_dir)
-    
-    
-    
-        
-    
