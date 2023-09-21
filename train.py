@@ -19,6 +19,9 @@ from torch import nn
 from torch import optim
 from torchvision import datasets, transforms, models
 
+import warnings
+warnings.filterwarnings("ignore") 
+
 
 def load_checkpoint(filepath):
     checkpoint = torch.load(filepath)
@@ -93,17 +96,19 @@ def data_loader(data, batch_size=64, shuffle=False):
 
 
 def create_model(architecture):
-    print(f'\t----------\nUsing {architecture} pretrained network...\n\t----------')  
+    print(f'\t----------\nUsing {architecture} pretrained network...')  
     if architecture == 'densenet161':
         model = models.densenet161(pretrained=True)
+        in_feats = 2208
     if architecture == 'vgg16':
-        model = models.vgg16(pretrained=True)   
+        model = models.vgg16(pretrained=True)
+        in_feats = 25088
     
     # freeze parameters
     for param in model.parameters():
         param.requires_grad = False
         
-    return model
+    return model, in_feats
 
 
 def check_save_dir(save_dir):
@@ -163,15 +168,11 @@ if data_dir:
         with open('cat_to_name.json', 'r') as f:
             cat_to_name = json.load(f)
         
-        model = create_model(args.arch)
-#             model = models.vgg16(pretrained=True)
+        model, in_feats = create_model(args.arch)
         model.to(device)
 
-        for param in model.parameters():
-            param.requires_grad = False
-
         classifier = nn.Sequential(OrderedDict([
-            ('fc1', nn.Linear(25088, 2048)),
+            ('fc1', nn.Linear(in_feats, 2048)),
             ('relu1', nn.ReLU()),
             ('dropout1', nn.Dropout(0.2)),
             ('fc2', nn.Linear(2048, 512)),
