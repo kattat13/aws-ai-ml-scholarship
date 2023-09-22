@@ -23,28 +23,6 @@ import warnings
 warnings.filterwarnings("ignore") 
 
 
-def load_checkpoint(filepath):
-    checkpoint = torch.load(filepath)
-    model = models.vgg11(weights=False)
-    
-    classifier = nn.Sequential(OrderedDict([
-        ('fc1', nn.Linear(25088, 2048)),
-        ('relu1', nn.ReLU()),
-        ('dropout1', nn.Dropout(0.2)),
-        ('fc2', nn.Linear(2048, 512)),
-        ('relu2', nn.ReLU()),
-        ('dropout2', nn.Dropout(0.2)),
-        ('fc3', nn.Linear(512, 102)),
-        ('output', nn.LogSoftmax(dim=1))
-    ]))
-    
-    model.classifier = classifier   
-    model.load_state_dict(checkpoint['model_state'])
-    model.class_to_idx = checkpoint['class_to_idx']
-    
-    return model
-
-
 def save_model(save_dir):
     checkpoint = {
         'input_size': [3, 224, 224],
