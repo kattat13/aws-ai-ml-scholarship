@@ -63,7 +63,6 @@ def val_transformer(val_dir):
                                       transforms.ToTensor(),
                                       transforms.Normalize([0.485, 0.456, 0.406],
                                                            [0.229, 0.224, 0.225])])
-    # Load the Data
     val_data = datasets.ImageFolder(valid_dir, transform=val_transforms)
     return val_data
 
@@ -142,10 +141,7 @@ if data_dir:
         trainloader = data_loader(train_data, shuffle=True)
         testloader = data_loader(test_data)
         valloader = data_loader(val_data)
-        
-        with open('cat_to_name.json', 'r') as f:
-            cat_to_name = json.load(f)
-        
+               
         model, in_feats = create_model(args.arch)
         model.to(device)
 
