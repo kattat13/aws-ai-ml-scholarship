@@ -99,19 +99,39 @@ def load_checkpoint(filepath):
     
     return model
 
-
 # python predict.py flowers/test/13/image_05745.jpg save_directory/saved_model.pth
 
 
 parser = argparse.ArgumentParser(description='Train and save an image classification model.')
 parser.add_argument('image_path', help='Path to the input image', default='flowers/test/13/image_05744.jpg')
 parser.add_argument('checkpoint', help='Checkpoint of the trained model', default='save_directory/saved_model.pth')
+parser.add_argument('--top_k', help='Return top_k most likely classes, default=5', type=int, default=5)
+parser.add_argument('--category_names', help='Path to file with mapping of categories to class names', default='')
+parser.add_argument('--gpu', help='Option to use GPU', action='store_true', default=False)
 
 args = parser.parse_args()
 
 check_file = args.image_path
 checkpoint = args.checkpoint
 
+if args.category_names:
+    with open(args.category_names, 'r') as f:
+        cat_to_name = json.load(f)
+else:
+    with open('cat_to_name.json', 'r') as f:
+        cat_to_name = json.load(f)
+
+if args.gpu:
+    if torch.cuda.is_available():
+        print('\t----------\nUsing CUDA for predictions:', torch.cuda.memory_allocated())
+        device = torch.device('cuda')
+    else:
+        print("\t----------\nCUDA was not found on device, using CPU instead.")
+        device = torch.device('cpu')
+else:
+    print("\t----------\nUsing CPU for predictions.")
+    device = torch.device('cpu')
+       
 # loading the model from the checkpoint
 model = load_checkpoint(checkpoint)
 
