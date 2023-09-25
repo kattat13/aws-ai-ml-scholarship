@@ -1,7 +1,7 @@
 # AI Programming with Python Project
 
 This image classifier project is a requirement to complete the Udacity & AWS AI Programming with Python Nanodegree scholarship. In this project, students first develop code for an image classifier built with PyTorch, then convert it into a command line application.
-The project utilizes [the dataset of 102 flowers](https://www.robots.ox.ac.uk/~vgg/data/flowers/102/index.html). 
+The project utilizes [the dataset of about 8200 images of flowers divided into 102 classes](https://www.robots.ox.ac.uk/~vgg/data/flowers/102/index.html). 
 
 ## Files
 - `Image Classifier Project.ipynb`: a Jupyter notebook, contains the whole project code to build and train an image classifier.
